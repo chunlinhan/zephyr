@@ -34,13 +34,13 @@ static struct nxp_mpu_region mpu_regions[] = {
 	MPU_REGION_ENTRY("RAM_L_0",
 			 SRAM_L_BASE_ADDRESS,
 			 0x1FFFFFFF,
-			 REGION_RAM_ATTR),
+			 REGION_SU_RAM_ATTR),
 	/* Region 4 */
 	MPU_REGION_ENTRY("RAM_U_0",
 			 CONFIG_SRAM_BASE_ADDRESS,
 			 (CONFIG_SRAM_BASE_ADDRESS +
 				 (CONFIG_SRAM_SIZE * 1024) - 1),
-			 REGION_RAM_ATTR),
+			 REGION_SU_RAM_ATTR),
 	/* Region 5 */
 	MPU_REGION_ENTRY("DEVICE_0",
 			 DEVICE_S_BASE_ADDRESS,

@@ -43,7 +43,7 @@ extern "C" {
 #include <arch/arm/cortex_m/nmi.h>
 #endif
 
-#define STACK_ALIGN  4
+#define STACK_ALIGN  32
 
 
 /* All thread stacks, regardless of whether owned by application or kernel,

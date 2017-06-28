@@ -12,6 +12,7 @@
 #include <arch/arm/cortex_m/mpu/nxp_mpu.h>
 #include <logging/sys_log.h>
 #include <misc/__assert.h>
+#include <linker/linker-defs.h>
 
 #define STACK_GUARD_REGION_SIZE 32
 
@@ -26,10 +27,14 @@ static inline u32_t _get_region_attr_by_type(u32_t type)
 {
 	switch (type) {
 	case THREAD_STACK_REGION:
-		return 0;
+		return REGION_RAM_ATTR;
 	case THREAD_STACK_GUARD_REGION:
 		/* The stack guard region has to be not accessible */
 		return REGION_RO_ATTR;
+#ifdef CONFIG_APPLICATION_MEMORY
+	case THREAD_APP_RAM_REGION:
+		return REGION_RAM_ATTR;
+#endif
 	default:
 		/* Size 0 region */
 		return 0;
@@ -162,12 +167,30 @@ void arm_core_mpu_configure(u8_t type, u32_t base, u32_t size)
 
 	switch (type) {
 	case THREAD_STACK_REGION:
+#if defined(CONFIG_MPU_STACK_GUARD)
+		/* Skip stack guard region size in the beginning of the stack */
+		_region_init(region_index, base + STACK_GUARD_REGION_SIZE,
+			     ENDADDR_ROUND(base + size),
+			     region_attr);
+#else
+		_region_init(region_index, base,
+			     ENDADDR_ROUND(base + size),
+			     region_attr);
+#endif
 		break;
 	case THREAD_STACK_GUARD_REGION:
 		_region_init(region_index, base,
 			     ENDADDR_ROUND(base + STACK_GUARD_REGION_SIZE),
 			     region_attr);
 		break;
+#if defined(CONFIG_APPLICATION_MEMORY)
+	case THREAD_APP_RAM_REGION:
+		_region_init(region_index, base,
+			     ENDADDR_ROUND(base + size),
+			     region_attr);
+
+		break;
+#endif
 	default:
 		break;
 	}
@@ -214,6 +237,11 @@ static void _nxp_mpu_config(void)
 			     mpu_config.mpu_regions[r_index].end,
 			     mpu_config.mpu_regions[r_index].attr);
 	}
+
+#ifdef CONFIG_APPLICATION_MEMORY
+	arm_core_mpu_configure(THREAD_APP_RAM_REGION, (u32_t)__app_ram_start,
+				(u32_t)__app_ram_end - (u32_t)__app_ram_start);
+#endif
 
 	/* Enable MPU */
 	SYSMPU->CESR |= SYSMPU_CESR_VLD_MASK;

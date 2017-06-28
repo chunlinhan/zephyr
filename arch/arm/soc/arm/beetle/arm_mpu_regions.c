@@ -15,7 +15,7 @@ static struct arm_mpu_region mpu_regions[] = {
 	/* Region 1 */
 	MPU_REGION_ENTRY("RAM_0",
 			 CONFIG_SRAM_BASE_ADDRESS,
-			 REGION_RAM_ATTR(REGION_128K)),
+			 REGION_SU_RAM_ATTR(REGION_128K)),
 	/* Region 2 */
 	MPU_REGION_ENTRY("APB_0",
 			 _BEETLE_APB_BASE,

@@ -30,6 +30,9 @@ extern "C" {
 /* Thread Stack Region Intent Type */
 #define THREAD_STACK_REGION 0x1
 #define THREAD_STACK_GUARD_REGION 0x2
+#ifdef CONFIG_APPLICATION_MEMORY
+#define THREAD_APP_RAM_REGION 0x3
+#endif /* CONFIG_APPLICATION_MEMORY */
 
 #if defined(CONFIG_ARM_CORE_MPU)
 /* ARM Core MPU Driver API */

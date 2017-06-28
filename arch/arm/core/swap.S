@@ -167,6 +167,14 @@ _thread_irq_disabled:
     vldmia r0, {s16-s31}
 #endif
 
+#ifdef CONFIG_APPLICATION_MEMORY
+    /* r2 contains k_thread */
+    add r0, r2, #0
+    push {r2, lr}
+    blx configure_mpu_thread_stack
+    pop {r2, lr}
+#endif /*CONFIG_APPLICATION_MEMORY */
+
 #ifdef CONFIG_MPU_STACK_GUARD
     /* r2 contains k_thread */
     add r0, r2, #0

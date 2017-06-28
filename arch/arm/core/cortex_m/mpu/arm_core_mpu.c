@@ -29,3 +29,22 @@ void configure_mpu_stack_guard(struct k_thread *thread)
 	arm_core_mpu_enable();
 }
 #endif
+
+#if defined(CONFIG_APPLICATION_MEMORY)
+/*
+ * @brief Configure MPU thread stack region
+ *
+ * This function configures per thread stack region reprogramming the MPU.
+ * The functionality is meant to be used during context switch.
+ *
+ * @param thread thread info data structure.
+ */
+void configure_mpu_thread_stack(struct k_thread *thread)
+{
+	arm_core_mpu_disable();
+	arm_core_mpu_configure(THREAD_STACK_REGION,
+			       thread->stack_info.start,
+			       thread->stack_info.size);
+	arm_core_mpu_enable();
+}
+#endif

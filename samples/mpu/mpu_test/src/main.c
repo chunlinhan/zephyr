@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <stdlib.h>
+#include <string.h>
 
 #include <zephyr.h>
 #include <flash.h>
@@ -20,6 +21,13 @@
 #define WRITE_CMD_HELP "Write in to boot FLASH/ROM"
 #define RUN_CMD_HELP   "Run code located in RAM"
 #define MTEST_CMD_HELP "Memory Test writes or reads a memory location"
+#define UNPRIV_CMD_HELP "Access kernel RAM data in unprivileged mode"
+
+/* Thread stack will be located in kernel RAM area */
+K_THREAD_STACK_DEFINE(_kernel_data, 1024);
+/* The following data will be located in app RAM area */
+char _app_data[1024];
+
 
 static int shell_cmd_read(int argc, char *argv[])
 {
@@ -143,6 +151,43 @@ static int shell_cmd_mtest(int argc, char *argv[])
 	return 0;
 }
 
+
+static int shell_cmd_unpriv(int argc, char *argv[])
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	printk("Thread runs under privileged mode\n");
+	printk("Access data in app ram area:");
+	memset(_app_data, 0, 256);
+	printk("\nPass.\n");
+	printk("Access data in kernel ram area:");
+	memset(_kernel_data, 0, 256);
+	printk("\nPass.\n");
+
+	printk("Switch to unprivileged mode\n");
+
+	/* TODO: Should use kernel API to switch to
+	 * unprivileged mode when ZEP-2190 is done.
+	 */
+	__asm volatile
+	(
+		"mrs r0, control	\n"	\
+		"orr r0, r0, #1		\n"	\
+		"msr control, r0	\n"	\
+		:::"r0"
+	);
+
+	printk("Access data in app ram area:");
+	memset(_app_data, 0, 256);
+	printk("\nPass.\n");
+	printk("Access data in kernel ram area:");
+	memset(_kernel_data, 0, 256);
+	printk("\nPass.\n");
+
+	return 0;
+}
+
 #define SHELL_MODULE "mpu_test"
 
 static struct shell_cmd commands[] = {
@@ -156,6 +201,7 @@ static struct shell_cmd commands[] = {
 #endif /* SOC_FLASH_MCUX*/
 	{ "run", shell_cmd_run, RUN_CMD_HELP },
 	{ "mtest", shell_cmd_mtest, MTEST_CMD_HELP },
+	{ "unpriv", shell_cmd_unpriv, UNPRIV_CMD_HELP },
 	{ NULL, NULL, NULL }
 };
 
